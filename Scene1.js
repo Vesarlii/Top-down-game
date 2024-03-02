@@ -10,27 +10,60 @@ class Scene1 extends Phaser.Scene {
         this.load.spritesheet('playerFront', 'images/spritesheets/front.png', { frameWidth: 86, frameHeight: 62 });
         this.load.spritesheet('playerBack', 'images/spritesheets/back.png', { frameWidth: 86, frameHeight: 62 });
 
-        this.load.image('tiles', 'images/map/ground.png');
-        this.load.image('tilestrees', 'images/map/treeset.png');
-        this.load.tilemapTiledJSON("map", "images/map/map1.json");
+        this.load.image('tiles', 'images/map/ground.png', { image: { compression: 'none' } });
+        this.load.image('tilestrees', 'images/map/treeset.png', { image: { compression: 'none' } });
+        this.load.tilemapTiledJSON("map", "images/map/map1.json", undefined, Phaser.Tilemaps.TILED_JSON, { compression: 'none' });
     }
 
     create() {
+
         console.log("Create method is being called."); 
         const gameWidth = window.innerWidth;
         const gameHeight = window.innerHeight;
+
+        
     
         const map = this.make.tilemap({ key: "map", tileWidth: 32, tileHeight: 32 });
         const tileset = map.addTilesetImage("ground", "tiles");
-        const tilesettrees = map.addTilesetImage("trees", "tilestrees");
-        const layer0 = map.createLayer("bot", tileset, 0, 0);
-        const layer1 = map.createLayer("mid", tileset, 0, 0);
-        const layer2 = map.createLayer("mid-top", tileset, 0, 0);
-        this.layer3 = map.createLayer("top", [tileset, tilesettrees], 0, 0);
+        console.log("Tileset 'ground' loaded");
     
-        this.player = this.physics.add.sprite(gameWidth / 2, gameHeight / 2, 'playerRight');
-        this.player.setCollideWorldBounds(true);
+        const tilesettrees = map.addTilesetImage("trees", "tilestrees");
+        console.log("Tileset 'trees' loaded");
+    
+        let layer0 = map.createLayer("bot", tileset, 0, 0).setScale(2);
+        console.log("Layer 'bot' loaded");
+    
+        this.layer1 = map.createLayer("mid", tileset, 0, 0).setScale(2);
+        console.log("Layer 'mid' loaded");
+    
+        this.layer2 = map.createLayer("mid-top", tileset, 0, 0).setScale(2);
+        console.log("Layer 'mid-top' loaded");
+    
+        this.layer3 = map.createLayer("top", [tileset, tilesettrees], 0, 0).setScale(2);
+        console.log("Layer 'top' loaded");
+    
+        // Debugowanie fizyki
+        this.physics.world.enable(layer0);
+        layer0.setCollisionByExclusion([-1]);
+
+        /*this.layer0.setAntialias(true);
+        this.layer1.setAntialias(true);
+        this.layer2.setAntialias(true);
+        this.layer3.setAntialias(true);*/
+        
+    
+        this.player = this.physics.add.sprite(gameWidth / 4, gameHeight / 2, 'playerRight').setScale(2);
+        //this.player.setCollideWorldBounds(true);
         this.player.setDepth(1);
+        //this.layer3.setDepth(2);
+        
+
+
+        this.cameras.main.startFollow(this.player);
+        
+
+
+        this.cameras.main.setBackgroundColor('#ffffff');
     
         this.physics.world.enable(this.player);
         this.player.body.setImmovable(false);
@@ -127,20 +160,3 @@ class Scene1 extends Phaser.Scene {
         }
     }
 }
-
-const config = {
-    debug: true,
-    type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 },
-            debug: false
-        }
-    },
-    scene: [Scene1]
-};
-
-const game = new Phaser.Game(config);
