@@ -1,6 +1,8 @@
 class Scene1 extends Phaser.Scene {
     constructor() {
         super({ key: 'Scene1' });
+        this.npcImage = null;
+        this.playerCanMove = true; 
     }
 
     preload() {
@@ -18,7 +20,7 @@ class Scene1 extends Phaser.Scene {
     
         // Wczytywanie obrazków dla gnoma
         this.load.spritesheet('npcIdle', 'images/npc/gnom/gnomidle.png', { frameWidth: 32, frameHeight: 64 });
-    
+        this.load.spritesheet('npcImage', 'images/npc/gnom/gnom.png', { frameWidth: 60, frameHeight: 80 });
     
         console.log("Preload completed.");
     }
@@ -46,22 +48,8 @@ class Scene1 extends Phaser.Scene {
     
         this.layer3 = map.createLayer("top", [tileset, tilesettrees], 0, 0).setScale(2);
         console.log("Layer 'top' loaded");
-    
-        // Debugowanie fizyki
-        this.physics.world.enable(layer0);
-    
         
-        layer0.setCollisionByExclusion([-1]);
-        layer0.forEachTile((tile) => {
-            if (tile.index !== -1) {
-                tile.setCollision(true);
-                tile.setCollisionCallback(() => {
-                    console.log("Kolizja z kafelkiem o indeksie:", tile.index);
-                    this.player.setX(this.player._oldPosition.x);
-                    this.player.setY(this.player._oldPosition.y);
-                });
-            }
-        });
+        this.layer3.setDepth(2);
     
         this.cameras.main.setBounds(0, 0, map.widthInPixels * 2, map.heightInPixels * 2);
     
@@ -91,6 +79,27 @@ class Scene1 extends Phaser.Scene {
 
             npc.setX(npc._oldPosition.x);
             npc.setY(npc._oldPosition.y);
+        });
+
+        this.physics.add.collider(this.player, this.layer3);
+
+        this.input.keyboard.on('keydown-E', () => {
+            // Sprawdź, czy obrazek NPC jest już widoczny
+            if (this.npcImage) {
+                // Usuń obrazek NPC z dołu ekranu
+                this.npcImage.destroy();
+                this.npcImage = null; // Ustaw zmienną na null, aby wskazywać, że obrazek jest niewidoczny
+            } else {
+                const interactionDistance = 170; // Dostosuj do swoich potrzeb
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc.x, this.npc.y);
+
+                if (distance <= interactionDistance) {
+                    // Gracz jest w odległości interakcji od NPC
+                    // Dodaj obrazek NPC na dole ekranu po lewej stronie
+                    this.npcImage = this.add.sprite(160, this.sys.game.config.height - 145, 'npcImage', 0);
+                    this.npcImage.setScale(3); // Dostosuj do swoich potrzeb
+                }
+            }
         });
 
         this.player.body.setImmovable(false);
@@ -134,54 +143,91 @@ class Scene1 extends Phaser.Scene {
             repeat: -1
         });
         this.npc.anims.play('npcIdle', true);
-    }
-    
 
-    checkCollisions() {
-        // Sprawdź kolizję z warstwą "top"
-        this.physics.world.overlap(this.player, this.layer3, (player, tile) => {
+        this.layer3.forEachTile(tile => {
+            // Sprawdź, czy index kafelka nie wynosi -1 (lub dowolnej innej wartości, jeśli to, co chcesz)
             if (tile.index !== -1) {
-                console.log("Kolizja z kafelkiem o indeksie:", tile.index);
-                
-                player.setX(player._oldPosition.x);
-                player.setY(player._oldPosition.y);
-
+                // Ustaw kolizję dla kafelka
+                tile.setCollision(true);
+                tile.setCollisionCallback(() => {
+                    console.log("Kolizja z kafelkiem o indeksie:", tile.index);
+                    this.player.setX(this.player._oldPosition.x);
+                    this.player.setY(this.player._oldPosition.y);
+                });
             }
         });
     }
+    
+
+
 
     update() {
-        
         const speed = 200;
-
-        if (!this.player) {
-            return;
-        }
-
-        const isLeftKeyDown = this.cursors.left.isDown;
-        const isRightKeyDown = this.cursors.right.isDown;
-        const isUpKeyDown = this.cursors.up.isDown;
-        const isDownKeyDown = this.cursors.down.isDown;
-
-        
-        this.checkCollisions();
-
-        
-        if (isLeftKeyDown) {
-            this.player.setVelocityX(-speed);
-            this.player.setVelocityY(0);
-        } else if (isRightKeyDown) {
-            this.player.setVelocityX(speed);
-            this.player.setVelocityY(0);
-        } else if (isUpKeyDown) {
-            this.player.setVelocityY(-speed);
-            this.player.setVelocityX(0);
-        } else if (isDownKeyDown) {
-            this.player.setVelocityY(speed);
-            this.player.setVelocityX(0);
+    
+        if (this.playerCanMove) {
+            const isLeftKeyDown = this.cursors.left.isDown;
+            const isRightKeyDown = this.cursors.right.isDown;
+            const isUpKeyDown = this.cursors.up.isDown;
+            const isDownKeyDown = this.cursors.down.isDown;
+    
+            // Ustaw prędkość tylko w jednym kierunku jednocześnie
+            if (isLeftKeyDown) {
+                this.player.setVelocityX(-speed);
+                this.player.setVelocityY(0);
+            } else if (isRightKeyDown) {
+                this.player.setVelocityX(speed);
+                this.player.setVelocityY(0);
+            } else if (isUpKeyDown) {
+                this.player.setVelocityY(-speed);
+                this.player.setVelocityX(0);
+            } else if (isDownKeyDown) {
+                this.player.setVelocityY(speed);
+                this.player.setVelocityX(0);
+            } else {
+                // Brak naciśniętych klawiszy
+                this.player.setVelocity(0, 0);
+            }
+    
+            // Animacje
+            if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
+                if (Math.abs(this.player.body.velocity.x) > Math.abs(this.player.body.velocity.y)) {
+                    if (this.player.body.velocity.x < 0) {
+                        this.player.anims.play('right', true);
+                        this.player.flipX = true;
+                    } else {
+                        this.player.anims.play('right', true);
+                        this.player.flipX = false;
+                    }
+                } else {
+                    if (this.player.body.velocity.y < 0) {
+                        this.player.anims.play('back', true);
+                    } else {
+                        this.player.anims.play('front', true);
+                    }
+                }
+            } else {
+                this.player.anims.stop(['back', 'front', 'right']);
+            }
+    
+            // Aktualizuj poprzednią pozycję gracza
+            this.player._oldPosition = { x: this.player.x, y: this.player.y };
         } else {
-           
+            // Gracz nie może się poruszać, ustaw prędkość na zero
             this.player.setVelocity(0, 0);
+        }
+    
+        // Sprawdź, czy obrazek NPC jest już widoczny
+        if (this.npcImage) {
+            // Gracz nie może się poruszać, ustaw prędkość na zero
+            this.playerCanMove = false;
+    
+            // Ustaw pozycję obrazka NPC na stałej odległości od dołu i od prawej strony ekranu
+            const npcImageX = 160; // Dostosuj do swoich potrzeb
+            const npcImageY = this.cameras.main.height - 145; // Dostosuj do swoich potrzeb
+            this.npcImage.setPosition(npcImageX, npcImageY);
+        } else {
+            // Gracz może się poruszać
+            this.playerCanMove = true;
         }
 
         // Animacje
@@ -219,4 +265,6 @@ class Scene1 extends Phaser.Scene {
                 console.log("Gracz wszedł w interakcję z NPC!");
             }
         }
+
+        
     }}
