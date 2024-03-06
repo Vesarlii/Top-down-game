@@ -2,6 +2,7 @@ class Scene1 extends Phaser.Scene {
     constructor() {
         super({ key: 'Scene1' });
         this.npcImage = null;
+        this.npcImage2=null;
         this.playerCanMove = true; 
     }
 
@@ -16,12 +17,15 @@ class Scene1 extends Phaser.Scene {
         // Wczytywanie obrazków dla mapy
         this.load.image('tiles', 'images/map/ground.png', { image: { compression: 'none' } });
         this.load.image('tilestrees', 'images/map/treeset.png', { image: { compression: 'none' } });
+        this.load.image('tilesapple', 'images/map/applehouse.png', { image: { compression: 'none' } });
         this.load.tilemapTiledJSON("map", "images/map/map1.json", undefined, Phaser.Tilemaps.TILED_JSON, { compression: 'none' });
     
         // Wczytywanie obrazków dla gnoma
         this.load.spritesheet('npcIdle', 'images/npc/gnom/gnomidle.png', { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('npcImage', 'images/npc/gnom/gnom.png', { frameWidth: 60, frameHeight: 80 });
-    
+        this.load.spritesheet('npc2', 'images/npc/girls/girls.png', { frameWidth: 128, frameHeight: 64 });
+        this.load.spritesheet('npcImage2', 'images/npc/girls/dzieciobraz.png', { frameWidth: 79, frameHeight: 67 });
+        
         console.log("Preload completed.");
     }
 
@@ -36,42 +40,52 @@ class Scene1 extends Phaser.Scene {
     
         const tilesettrees = map.addTilesetImage("trees", "tilestrees");
         console.log("Tileset 'trees' loaded");
+
+        const tilesapple = map.addTilesetImage("apples", "tilesapple");
+        console.log("Tileset 'trees' loaded");
     
-        let layer0 = map.createLayer("bot", tileset, 0, 0).setScale(2);
-        console.log("Layer 'bot' loaded");
+        let layer0 = map.createLayer("0", tileset, 0, 0).setScale(2);
+        console.log("Layer '0' loaded");
     
-        let layer1 = map.createLayer("mid", tileset, 0, 0).setScale(2);
-        console.log("Layer 'mid' loaded");
+        let layer1 = map.createLayer("1", tileset, 0, 0).setScale(2);
+        console.log("Layer '1' loaded");
     
-        let layer2 = map.createLayer("mid-top", tileset, 0, 0).setScale(2);
-        console.log("Layer 'mid-top' loaded");
+        let layer2 = map.createLayer("2", tileset, 0, 0).setScale(2);
+        console.log("Layer '2' loaded");
+       
+        let layer3 = map.createLayer("3", tileset, 0, 0).setScale(2);
+        console.log("Layer '3' loaded");
     
-        this.layer3 = map.createLayer("top", [tileset, tilesettrees], 0, 0).setScale(2);
-        console.log("Layer 'top' loaded");
+        this.layer4 = map.createLayer("4", [tileset, tilesettrees, tilesapple], 0, 0).setScale(2);
+        console.log("Layer '4' loaded");
         
-        this.layer3.setDepth(2);
+        this.layer4.setDepth(2);
     
         this.cameras.main.setBounds(0, 0, map.widthInPixels * 2, map.heightInPixels * 2);
     
-        this.player = this.physics.add.sprite(90, 1152, 'playerRight').setScale(2);
+        this.player = this.physics.add.sprite(200, 1300, 'playerRight').setScale(2);
         this.player.setDepth(2);
 
         this.npc = this.physics.add.sprite(1024, 512, 'npcIdle').setScale(2);
         this.npc.setDepth(1);
+        this.npc2 = this.physics.add.sprite(2800, 500, 'npc2').setScale(1.5);
+        this.npc2.setDepth(1);
     
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBackgroundColor('#ffffff');
     
         this.physics.world.enable(this.player);
         this.physics.world.enable(this.npc);
+        this.physics.world.enable(this.npc2);
 
         this.physics.add.collider(this.npc, layer0);
         this.npc.setInteractive();
+        this.npc2.setInteractive();
 
         this.npc._oldPosition = { x: 1024, y: 512 };
+        this.npc2._oldPosition = { x: 2800, y: 500 };
 
         this.physics.add.collider(this.player, this.npc, (player, npc) => {
-            // Jeżeli wystąpi kolizja, przywróć gracza na poprzednią pozycję
             player.setX(player._oldPosition.x);
             player.setY(player._oldPosition.y);
 
@@ -81,23 +95,56 @@ class Scene1 extends Phaser.Scene {
             npc.setY(npc._oldPosition.y);
         });
 
-        this.physics.add.collider(this.player, this.layer3);
+        this.physics.add.collider(this.player, this.npc2, (player, npc2) => {
+            player.setX(player._oldPosition.x);
+            player.setY(player._oldPosition.y);
+
+            npc2.setVelocity(0, 0);
+
+            npc2.setX(npc2._oldPosition.x);
+            npc2.setY(npc2._oldPosition.y);
+        });
+
+        this.physics.add.collider(this.player, this.layer4);
 
         this.input.keyboard.on('keydown-E', () => {
-            // Sprawdź, czy obrazek NPC jest już widoczny
+  
             if (this.npcImage) {
-                // Usuń obrazek NPC z dołu ekranu
+             
                 this.npcImage.destroy();
-                this.npcImage = null; // Ustaw zmienną na null, aby wskazywać, że obrazek jest niewidoczny
+                this.npcImage = null; 
+                this.playerCanMove = true; 
             } else {
-                const interactionDistance = 170; // Dostosuj do swoich potrzeb
+                const interactionDistance = 170; 
                 const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc.x, this.npc.y);
+    
+                if (distance <= interactionDistance) {
+
+                    const npcImageX = this.cameras.main.centerX - this.cameras.main.width / 2;
+                    const npcImageY = this.cameras.main.height - 145;
+                    this.npcImage = this.add.sprite(npcImageX, npcImageY, 'npcImage', 0);
+                    this.npcImage.setScale(3); 
+                    this.npcImage.setDepth(3);
+                    this.playerCanMove = false; 
+                }
+            }
+        });
+
+        this.input.keyboard.on('keydown-E', () => {
+
+            if (this.npcImage2) {
+
+                this.npcImage2.destroy();
+                this.npcImage2 = null;
+            } else {
+                const interactionDistance = 170; 
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc2.x, this.npc2.y);
 
                 if (distance <= interactionDistance) {
-                    // Gracz jest w odległości interakcji od NPC
-                    // Dodaj obrazek NPC na dole ekranu po lewej stronie
-                    this.npcImage = this.add.sprite(160, this.sys.game.config.height - 145, 'npcImage', 0);
-                    this.npcImage.setScale(3); // Dostosuj do swoich potrzeb
+                   
+                    this.npcImage2 = this.add.sprite(160, this.sys.game.config.height - 145, 'npcImage2', 0);
+                    this.npcImage2.setScale(3); 
+                    this.npcImage2.setDepth(3);
                 }
             }
         });
@@ -144,10 +191,17 @@ class Scene1 extends Phaser.Scene {
         });
         this.npc.anims.play('npcIdle', true);
 
-        this.layer3.forEachTile(tile => {
-            // Sprawdź, czy index kafelka nie wynosi -1 (lub dowolnej innej wartości, jeśli to, co chcesz)
+        this.anims.create({
+            key: 'npc2',
+            frames: this.anims.generateFrameNumbers('npc2', { start: 0, end: 9 }),
+            frameRate: 7,
+            repeat: -1
+        });
+        this.npc2.anims.play('npc2', true);
+
+        this.layer4.forEachTile(tile => {
             if (tile.index !== -1) {
-                // Ustaw kolizję dla kafelka
+
                 tile.setCollision(true);
                 tile.setCollisionCallback(() => {
                     console.log("Kolizja z kafelkiem o indeksie:", tile.index);
@@ -162,15 +216,56 @@ class Scene1 extends Phaser.Scene {
 
 
     update() {
-        const speed = 200;
+        const speed = 400;
     
-        if (this.playerCanMove) {
+        let playerCanMoveToNPC1 = true;
+        let playerCanMoveToNPC2 = true;
+    
+        if (this.npcImage) {
+            playerCanMoveToNPC1 = false;
+            const npcImageX = this.cameras.main.worldView.x + 60;
+            const npcImageY = this.cameras.main.worldView.y + window.innerHeight - 145;
+            this.npcImage.setPosition(npcImageX, npcImageY);
+        } else {
+            playerCanMoveToNPC1 = true;
+        }
+    
+        if (this.npcImage2) {
+            playerCanMoveToNPC2 = false;
+            const npcImage2X = this.cameras.main.worldView.x + 90;
+            const npcImage2Y = this.cameras.main.worldView.y + window.innerHeight - 120;
+            this.npcImage2.setPosition(npcImage2X, npcImage2Y);
+        } else {
+            playerCanMoveToNPC2 = true;
+        }
+    
+        const isEKeyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown;
+    
+        if (isEKeyDown) {
+            const interactionDistanceNPC1 = 170;
+            const distanceNPC1 = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc.x, this.npc.y);
+    
+            if (distanceNPC1 <= interactionDistanceNPC1) {
+                console.log("Gracz wszedł w interakcję z NPC1!");
+                playerCanMoveToNPC1 = false;
+            }
+    
+            const interactionDistanceNPC2 = 170;
+            const distanceNPC2 = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc2.x, this.npc2.y);
+    
+            if (distanceNPC2 <= interactionDistanceNPC2) {
+                console.log("Gracz wszedł w interakcję z NPC2!");
+                playerCanMoveToNPC2 = false;
+            }
+        }
+    
+        if (playerCanMoveToNPC1 & playerCanMoveToNPC2) {
             const isLeftKeyDown = this.cursors.left.isDown;
             const isRightKeyDown = this.cursors.right.isDown;
             const isUpKeyDown = this.cursors.up.isDown;
             const isDownKeyDown = this.cursors.down.isDown;
     
-            // Ustaw prędkość tylko w jednym kierunku jednocześnie
+
             if (isLeftKeyDown) {
                 this.player.setVelocityX(-speed);
                 this.player.setVelocityY(0);
@@ -184,7 +279,7 @@ class Scene1 extends Phaser.Scene {
                 this.player.setVelocityY(speed);
                 this.player.setVelocityX(0);
             } else {
-                // Brak naciśniętych klawiszy
+
                 this.player.setVelocity(0, 0);
             }
     
@@ -212,25 +307,9 @@ class Scene1 extends Phaser.Scene {
             // Aktualizuj poprzednią pozycję gracza
             this.player._oldPosition = { x: this.player.x, y: this.player.y };
         } else {
-            // Gracz nie może się poruszać, ustaw prędkość na zero
             this.player.setVelocity(0, 0);
         }
-    
-        // Sprawdź, czy obrazek NPC jest już widoczny
-        if (this.npcImage) {
-            // Gracz nie może się poruszać, ustaw prędkość na zero
-            this.playerCanMove = false;
-    
-            // Ustaw pozycję obrazka NPC na stałej odległości od dołu i od prawej strony ekranu
-            const npcImageX = 160; // Dostosuj do swoich potrzeb
-            const npcImageY = this.cameras.main.height - 145; // Dostosuj do swoich potrzeb
-            this.npcImage.setPosition(npcImageX, npcImageY);
-        } else {
-            // Gracz może się poruszać
-            this.playerCanMove = true;
-        }
-
-        // Animacje
+  
         if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
             if (Math.abs(this.player.body.velocity.x) > Math.abs(this.player.body.velocity.y)) {
                 if (this.player.body.velocity.x < 0) {
@@ -251,20 +330,11 @@ class Scene1 extends Phaser.Scene {
             this.player.anims.stop(['back', 'front', 'right']);
         }
         this.npc._oldPosition = { x: 1024, y: 512 };
+        this.npc2._oldPosition = { x: 2800, y: 500 };
         
         this.player._oldPosition = { x: this.player.x, y: this.player.y };
 
 
-        const isEKeyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown;
-
-        if (isEKeyDown) {
-            const interactionDistance = 170; 
-            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.npc.x, this.npc.y);
-    
-            if (distance <= interactionDistance) {
-                console.log("Gracz wszedł w interakcję z NPC!");
-            }
-        }
 
         
     }}
