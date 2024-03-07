@@ -3,7 +3,6 @@ class Scene1 extends Phaser.Scene {
         super({ key: 'Scene1' });
         this.npcImage = null;
         this.npcImage2=null;
-        this.playerCanMove = true; 
     }
 
     preload() {
@@ -20,12 +19,14 @@ class Scene1 extends Phaser.Scene {
         this.load.image('tilesapple', 'images/map/applehouse.png', { image: { compression: 'none' } });
         this.load.tilemapTiledJSON("map", "images/map/map1.json", undefined, Phaser.Tilemaps.TILED_JSON, { compression: 'none' });
     
-        // Wczytywanie obrazków dla gnoma
+        // Wczytywanie obrazków dla gnomow
         this.load.spritesheet('npcIdle', 'images/npc/gnom/gnomidle.png', { frameWidth: 32, frameHeight: 64 });
         this.load.spritesheet('npcImage', 'images/npc/gnom/gnom.png', { frameWidth: 60, frameHeight: 80 });
         this.load.spritesheet('npc2', 'images/npc/girls/girls.png', { frameWidth: 128, frameHeight: 64 });
         this.load.spritesheet('npcImage2', 'images/npc/girls/dzieciobraz.png', { frameWidth: 79, frameHeight: 67 });
         
+        // Wczytywanie obrazków dla stworzonek
+        this.load.spritesheet('rock', 'images/creatures/rock/start/rock.png', { frameWidth: 32, frameHeight: 32 });
         console.log("Preload completed.");
     }
 
@@ -70,6 +71,8 @@ class Scene1 extends Phaser.Scene {
         this.npc.setDepth(1);
         this.npc2 = this.physics.add.sprite(2800, 500, 'npc2').setScale(1.5);
         this.npc2.setDepth(1);
+        this.rock = this.physics.add.sprite(1524, 2200, 'rock').setScale(2);
+        this.rock.setDepth(1);
     
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBackgroundColor('#ffffff');
@@ -77,6 +80,7 @@ class Scene1 extends Phaser.Scene {
         this.physics.world.enable(this.player);
         this.physics.world.enable(this.npc);
         this.physics.world.enable(this.npc2);
+        this.physics.world.enable(this.rock);
 
         this.physics.add.collider(this.npc, layer0);
         this.npc.setInteractive();
@@ -84,6 +88,7 @@ class Scene1 extends Phaser.Scene {
 
         this.npc._oldPosition = { x: 1024, y: 512 };
         this.npc2._oldPosition = { x: 2800, y: 500 };
+        this.rock._oldPosition = { x: 1524, y: 2200 };
 
         this.physics.add.collider(this.player, this.npc, (player, npc) => {
             player.setX(player._oldPosition.x);
@@ -103,6 +108,16 @@ class Scene1 extends Phaser.Scene {
 
             npc2.setX(npc2._oldPosition.x);
             npc2.setY(npc2._oldPosition.y);
+        });
+
+        this.physics.add.collider(this.player, this.rock, (player, rock) => {
+            player.setX(player._oldPosition.x);
+            player.setY(player._oldPosition.y);
+
+            rock.setVelocity(0, 0);
+
+            rock.setX(rock._oldPosition.x);
+            rock.setY(rock._oldPosition.y);
         });
 
         this.physics.add.collider(this.player, this.layer4);
@@ -199,6 +214,14 @@ class Scene1 extends Phaser.Scene {
         });
         this.npc2.anims.play('npc2', true);
 
+        this.anims.create({
+            key: 'rock',
+            frames: this.anims.generateFrameNumbers('rock', { start: 0, end: 4 }),
+            frameRate: 6,
+            repeat: 0,
+            yoyo: true,
+        });
+
         this.layer4.forEachTile(tile => {
             if (tile.index !== -1) {
 
@@ -257,6 +280,16 @@ class Scene1 extends Phaser.Scene {
                 console.log("Gracz wszedł w interakcję z NPC2!");
                 playerCanMoveToNPC2 = false;
             }
+
+
+        }
+
+        const interactionDistanceROCK = 170;
+        const distanceROCK = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.rock.x, this.rock.y);
+
+        if (distanceROCK <= interactionDistanceROCK) {
+            console.log("Gracz wszedł w interakcję ze skałą!");
+            this.rock.anims.play('rock', true);
         }
     
         if (playerCanMoveToNPC1 & playerCanMoveToNPC2) {
