@@ -10,7 +10,7 @@ const config = {
             debug: false
         }
     },
-    scene: [StartScene, Scene1],
+    scene: [StartScene, Scene1, Scene2],
 
     // Konfiguracja kamery
     physics: {

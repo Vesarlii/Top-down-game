@@ -28,6 +28,7 @@ class Scene1 extends Phaser.Scene {
         // Wczytywanie obrazków dla stworzonek
         this.load.spritesheet('rock', 'images/creatures/rock/start/rock.png', { frameWidth: 32, frameHeight: 32 });
         console.log("Preload completed.");
+        this.load.image('piwnica', 'images/map/piwnica.png', { image: { compression: 'none' } });
     }
 
     create() {
@@ -121,6 +122,9 @@ class Scene1 extends Phaser.Scene {
         });
 
         this.physics.add.collider(this.player, this.layer4);
+
+        this.piwnica = this.physics.add.image(400, 400, 'piwnica').setScale(2); // Dostosuj współrzędne i skalę
+        this.piwnica.setAlpha(0);
 
         this.input.keyboard.on('keydown-E', () => {
   
@@ -240,6 +244,7 @@ class Scene1 extends Phaser.Scene {
 
     update() {
         const speed = 400;
+        const piwnica = new Phaser.Math.Vector2(400, 400);
     
         let playerCanMoveToNPC1 = true;
         let playerCanMoveToNPC2 = true;
@@ -271,6 +276,8 @@ class Scene1 extends Phaser.Scene {
             if (distanceNPC1 <= interactionDistanceNPC1) {
                 console.log("Gracz wszedł w interakcję z NPC1!");
                 playerCanMoveToNPC1 = false;
+
+                
             }
     
             const interactionDistanceNPC2 = 170;
@@ -282,6 +289,15 @@ class Scene1 extends Phaser.Scene {
             }
 
 
+        }
+
+
+
+        const distanceToTarget = Phaser.Math.Distance.Between(this.player.x, this.player.y, piwnica.x, piwnica.y);
+
+        if (distanceToTarget <= 50) {
+            console.log("Gracz osiągnął współrzędne, przejście do nowej sceny");
+            this.scene.start('Scene2');
         }
 
         const interactionDistanceROCK = 170;
