@@ -359,25 +359,7 @@ class Scene1 extends Phaser.Scene {
             this.player.setVelocity(0, 0);
         }
   
-        if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
-            if (Math.abs(this.player.body.velocity.x) > Math.abs(this.player.body.velocity.y)) {
-                if (this.player.body.velocity.x < 0) {
-                    this.player.anims.play('right', true);
-                    this.player.flipX = true;
-                } else {
-                    this.player.anims.play('right', true);
-                    this.player.flipX = false;
-                }
-            } else {
-                if (this.player.body.velocity.y < 0) {
-                    this.player.anims.play('back', true);
-                } else {
-                    this.player.anims.play('front', true);
-                }
-            }
-        } else {
-            this.player.anims.stop(['back', 'front', 'right']);
-        }
+
         this.npc._oldPosition = { x: 1024, y: 512 };
         this.npc2._oldPosition = { x: 2800, y: 500 };
         
