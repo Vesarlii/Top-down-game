@@ -10,13 +10,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // Inicjalizacja pozycji gracza
         this.initPosition(x, y);
     }
-    preload() {
-        // Wczytywanie spritesheets dla gracza
-        this.scene.load.spritesheet('playerRight', 'images/spritesheets/right.png', { frameWidth: 86, frameHeight: 62 });
-        this.scene.load.spritesheet('playerFront', 'images/spritesheets/front.png', { frameWidth: 86, frameHeight: 62 });
-        this.scene.load.spritesheet('playerBack', 'images/spritesheets/back.png', { frameWidth: 86, frameHeight: 62 });
-    }
-    
+
     initAnimations() {
         this.anims.create({
             key: 'right',
@@ -38,7 +32,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             frameRate: 10,
             repeat: -1
         });
-
     }
 
     initPosition(x, y) {
@@ -65,26 +58,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVelocity(0, 0);
         }
 
-        if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
-            if (Math.abs(this.player.body.velocity.x) > Math.abs(this.player.body.velocity.y)) {
-                if (this.player.body.velocity.x < 0) {
-                    this.player.anims.play('right', true);
-                    this.player.flipX = true;
+        if (this.body.velocity.x !== 0 || this.body.velocity.y !== 0) {
+            if (Math.abs(this.body.velocity.x) > Math.abs(this.body.velocity.y)) {
+                if (this.body.velocity.x < 0) {
+                    this.anims.play('right', true);
+                    this.flipX = true;
                 } else {
-                    this.player.anims.play('right', true);
-                    this.player.flipX = false;
+                    this.anims.play('right', true);
+                    this.flipX = false;
                 }
             } else {
-                if (this.player.body.velocity.y < 0) {
-                    this.player.anims.play('back', true);
+                if (this.body.velocity.y < 0) {
+                    this.anims.play('back', true);
                 } else {
-                    this.player.anims.play('front', true);
+                    this.anims.play('front', true);
                 }
             }
         } else {
-            this.player.anims.stop(['back', 'front', 'right']);
+            this.anims.stop(['back', 'front', 'right']);
         }
-
-
     }
 }
