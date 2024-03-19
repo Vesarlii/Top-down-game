@@ -29,16 +29,22 @@ class Scene2 extends Phaser.Scene {
         const tileset2 = map2.addTilesetImage("plytki", "plytki");
         console.log("Tileset 'plytki' loaded");
 
-        let layer0 = map2.createLayer("0", tileset2, 0, 0).setScale(4);
+        let layer0 = map2.createLayer("0", tileset2, 0, 0).setScale(2);
         console.log("Layer '0' loaded");
     
-        let layer1 = map2.createLayer("1", tileset2, 0, 0).setScale(4);
+        let layer1 = map2.createLayer("1", tileset2, 0, 0).setScale(2);
         console.log("Layer '1' loaded");
     
-        let layer2 = map2.createLayer("2", tileset2, 0, 0).setScale(4);
+        let layer2 = map2.createLayer("2", tileset2, 0, 0).setScale(2);
         console.log("Layer '2' loaded");
 
-        player = this.physics.add.existing(new Player(this, 100, 250)).setScale(2);
+        let layer3 = map2.createLayer("3", tileset2, 0, 0).setScale(2);
+        console.log("Layer '3' loaded");
+
+        let layer4 = map2.createLayer("4", tileset2, 0, 0).setScale(2);
+        console.log("Layer '4' loaded");
+
+        player = this.physics.add.existing(new Player(this, 150, 200)).setScale(2);
         this.physics.world.enable(player);
         this.physics.add.collider(player, layer2);
 
@@ -61,7 +67,7 @@ class Scene2 extends Phaser.Scene {
 
 
     layer2.forEachTile(tile => {
-        if (tile.index !== 17) {
+        if (tile.index !== 41) {
 
             tile.setCollision(true);
             tile.setCollisionCallback(() => {

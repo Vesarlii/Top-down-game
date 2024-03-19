@@ -24,7 +24,7 @@ class Scene1 extends Phaser.Scene {
         this.load.spritesheet('npcImage', 'images/npc/gnom/gnom.png', { frameWidth: 60, frameHeight: 80 });
         this.load.spritesheet('npc2', 'images/npc/girls/girls.png', { frameWidth: 128, frameHeight: 64 });
         this.load.spritesheet('npcImage2', 'images/npc/girls/dzieciobraz.png', { frameWidth: 79, frameHeight: 67 });
-        
+        this.load.spritesheet('npc3', 'images/npc/mushroom/mushroom.png', { frameWidth: 25, frameHeight: 40 });
         // Wczytywanie obrazków dla stworzonek
         this.load.spritesheet('rock', 'images/creatures/rock/start/rock.png', { frameWidth: 32, frameHeight: 32 });
         console.log("Preload completed.");
@@ -72,6 +72,8 @@ class Scene1 extends Phaser.Scene {
         this.npc.setDepth(1);
         this.npc2 = this.physics.add.sprite(2800, 500, 'npc2').setScale(1.5);
         this.npc2.setDepth(1);
+        this.npc3 = this.physics.add.sprite(2000, 1780, 'npc3').setScale(2);
+        this.npc3.setDepth(1);
         this.rock = this.physics.add.sprite(1524, 2200, 'rock').setScale(2);
         this.rock.setDepth(1);
     
@@ -81,14 +83,17 @@ class Scene1 extends Phaser.Scene {
         this.physics.world.enable(this.player);
         this.physics.world.enable(this.npc);
         this.physics.world.enable(this.npc2);
+        this.physics.world.enable(this.npc3);
         this.physics.world.enable(this.rock);
 
         this.physics.add.collider(this.npc, layer0);
         this.npc.setInteractive();
         this.npc2.setInteractive();
+        this.npc3.setInteractive();
 
         this.npc._oldPosition = { x: 1024, y: 512 };
         this.npc2._oldPosition = { x: 2800, y: 500 };
+        this.npc3._oldPosition = { x: 2000, y: 1780 };
         this.rock._oldPosition = { x: 1524, y: 2200 };
 
         this.physics.add.collider(this.player, this.npc, (player, npc) => {
@@ -99,6 +104,8 @@ class Scene1 extends Phaser.Scene {
 
             npc.setX(npc._oldPosition.x);
             npc.setY(npc._oldPosition.y);
+            
+            console.log("Kolizja z npc1");
         });
 
         this.physics.add.collider(this.player, this.npc2, (player, npc2) => {
@@ -109,6 +116,16 @@ class Scene1 extends Phaser.Scene {
 
             npc2.setX(npc2._oldPosition.x);
             npc2.setY(npc2._oldPosition.y);
+        });
+
+        this.physics.add.collider(this.player, this.npc3, (player, npc3) => {
+            player.setX(player._oldPosition.x);
+            player.setY(player._oldPosition.y);
+
+            npc3.setVelocity(0, 0);
+
+            npc3.setX(npc3._oldPosition.x);
+            npc3.setY(npc3._oldPosition.y);
         });
 
         this.physics.add.collider(this.player, this.rock, (player, rock) => {
@@ -124,7 +141,6 @@ class Scene1 extends Phaser.Scene {
         this.physics.add.collider(this.player, this.layer4);
 
         this.piwnica = this.physics.add.image(400, 400, 'piwnica').setScale(2); // Dostosuj współrzędne i skalę
-        this.piwnica.setAlpha(0);
 
         this.input.keyboard.on('keydown-E', () => {
   
@@ -217,6 +233,15 @@ class Scene1 extends Phaser.Scene {
             repeat: -1
         });
         this.npc2.anims.play('npc2', true);
+
+        this.anims.create({
+            key: 'npc3',
+            frames: this.anims.generateFrameNumbers('npc3', { start: 0, end: 1 }),
+            frameRate: 11,
+            repeat: -1
+        });
+        this.npc3.anims.play('npc3', true);
+
 
         this.anims.create({
             key: 'rock',
@@ -364,7 +389,6 @@ class Scene1 extends Phaser.Scene {
         this.npc2._oldPosition = { x: 2800, y: 500 };
         
         this.player._oldPosition = { x: this.player.x, y: this.player.y };
-
 
 
         
