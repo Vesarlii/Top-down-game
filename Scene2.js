@@ -7,8 +7,9 @@ class Scene2 extends Phaser.Scene {
     preload() {
         console.log("Preload method in Scene2 is being called.");
 
-        this.load.image('plytki', 'images/map/plytki.png', { image: { compression: 'none' } });
-        this.load.tilemapTiledJSON("map2", "images/map/piwnica.json", undefined, Phaser.Tilemaps.TILED_JSON, { compression: 'none' });
+        this.load.image('nowapiwnica', 'images/map/nowapiwnica.png', { image: { compression: 'none' } });
+        this.load.image('itemy', 'images/map/beczki.png', { image: { compression: 'none' } });
+        this.load.tilemapTiledJSON("map2", "images/map/piwnica2.json", undefined, Phaser.Tilemaps.TILED_JSON, { compression: 'none' });
 
         this.load.spritesheet('playerRight', 'images/spritesheets/right.png', { frameWidth: 86, frameHeight: 62 });
         this.load.spritesheet('playerFront', 'images/spritesheets/front.png', { frameWidth: 86, frameHeight: 62 });
@@ -26,14 +27,12 @@ class Scene2 extends Phaser.Scene {
 
 
         const map2 = this.make.tilemap({ key: "map2", tileWidth: 16, tileHeight: 16 });
-        const tileset2 = map2.addTilesetImage("plytki", "plytki");
-        console.log("Tileset 'plytki' loaded");
+        const tileset2 = map2.addTilesetImage("nowapiwnica2", "nowapiwnica"); 
+        console.log("Tileset 'nowapiwnica' loaded");
 
         let layer0 = map2.createLayer("0", tileset2, 0, 0).setScale(2);
         console.log("Layer '0' loaded");
     
-        let layer1 = map2.createLayer("1", tileset2, 0, 0).setScale(2);
-        console.log("Layer '1' loaded");
     
         let layer2 = map2.createLayer("2", tileset2, 0, 0).setScale(2);
         console.log("Layer '2' loaded");
@@ -41,8 +40,6 @@ class Scene2 extends Phaser.Scene {
         let layer3 = map2.createLayer("3", tileset2, 0, 0).setScale(2);
         console.log("Layer '3' loaded");
 
-        let layer4 = map2.createLayer("4", tileset2, 0, 0).setScale(2);
-        console.log("Layer '4' loaded");
 
         player = this.physics.add.existing(new Player(this, 150, 200)).setScale(2);
         this.physics.world.enable(player);
@@ -66,23 +63,31 @@ class Scene2 extends Phaser.Scene {
     this.rat.anims.play('rat', true);
 
 
-    layer2.forEachTile(tile => {
-        if (tile.index !== 41) {
-
-            tile.setCollision(true);
-            tile.setCollisionCallback(() => {
-                console.log("Kolizja z kafelkiem o indeksie:", tile.index);
-                player.setX(player._oldPosition.x);
-                player.setY(player._oldPosition.y);
-            });
+map2.layers.forEach(layer => {
+    for (let y = 0; y < layer.data.length; y++) {
+        for (let x = 0; x < layer.data[y].length; x++) {
+            const tile = layer.data[y][x];
+            if (tile.index !== -1 && tile.index !== 0) {
+                tile.setCollision(true);
+                tile.setCollisionCallback(() => {
+                    console.log("Kolizja z kafelkiem o indeksie:", tile.index);
+                    player.setX(player._oldPosition.x);
+                    player.setY(player._oldPosition.y);
+                });
+            }
         }
-    });
+    }
+});
+
+// Dodanie kolizji z warstwą layer2
+this.physics.add.collider(player, layer2);
+
     }
 
 
 
 update(){
-    const cursors = this.input.keyboard.createCursorKeys(); // Pobranie obiektu klawiszy strzałek
+    const cursors = this.input.keyboard.createCursorKeys(); 
 
     player.update(cursors); 
 
@@ -100,7 +105,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Inicjalizacja pozycji gracza
         this.initPosition(x, y);
+
+        this.body.setSize(this.width - 40, this.height - 35, true).setOffset(20, 35);
     }
+
+    
+
+
+        
 
     initAnimations() {
         this.anims.create({
