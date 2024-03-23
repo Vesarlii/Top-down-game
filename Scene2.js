@@ -29,15 +29,17 @@ class Scene2 extends Phaser.Scene {
         const map2 = this.make.tilemap({ key: "map2", tileWidth: 16, tileHeight: 16 });
         const tileset2 = map2.addTilesetImage("nowapiwnica2", "nowapiwnica"); 
         console.log("Tileset 'nowapiwnica' loaded");
+        const tileset3 = map2.addTilesetImage("beczki2", "itemy"); 
+        console.log("Tileset 'itemy' loaded");
 
         let layer0 = map2.createLayer("0", tileset2, 0, 0).setScale(2);
         console.log("Layer '0' loaded");
     
     
-        let layer2 = map2.createLayer("2", tileset2, 0, 0).setScale(2);
+        let layer2 = map2.createLayer("2", [tileset2, tileset3], 0, 0).setScale(2);
         console.log("Layer '2' loaded");
 
-        let layer3 = map2.createLayer("3", tileset2, 0, 0).setScale(2);
+        let layer3 = map2.createLayer("3", [tileset2, tileset3], 0, 0).setScale(2);
         console.log("Layer '3' loaded");
 
 
