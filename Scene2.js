@@ -1,4 +1,5 @@
 var player;
+
 class Scene2 extends Phaser.Scene {
     constructor() {
         super({ key: 'Scene2' });
@@ -15,8 +16,8 @@ class Scene2 extends Phaser.Scene {
         this.load.spritesheet('playerFront', 'images/spritesheets/front.png', { frameWidth: 86, frameHeight: 62 });
         this.load.spritesheet('playerBack', 'images/spritesheets/back.png', { frameWidth: 86, frameHeight: 62 });
 
-
         this.load.spritesheet('rat', 'images/npc/rat/krolszczur.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.image('ratImage', 'images/npc/rat/head_rat.png', { image: { compression: 'none' } });
     }
 
     create() {
@@ -24,76 +25,100 @@ class Scene2 extends Phaser.Scene {
         const gameWidth = window.innerWidth;
         const gameHeight = window.innerHeight;
 
-
-
         const map2 = this.make.tilemap({ key: "map2", tileWidth: 16, tileHeight: 16 });
-        const tileset2 = map2.addTilesetImage("nowapiwnica2", "nowapiwnica"); 
+        const tileset2 = map2.addTilesetImage("nowapiwnica2", "nowapiwnica");
         console.log("Tileset 'nowapiwnica' loaded");
-        const tileset3 = map2.addTilesetImage("beczki2", "itemy"); 
+        const tileset3 = map2.addTilesetImage("beczki2", "itemy");
         console.log("Tileset 'itemy' loaded");
 
         let layer0 = map2.createLayer("0", tileset2, 0, 0).setScale(2);
         console.log("Layer '0' loaded");
-    
-    
+
         let layer2 = map2.createLayer("2", [tileset2, tileset3], 0, 0).setScale(2);
         console.log("Layer '2' loaded");
 
         let layer3 = map2.createLayer("3", [tileset2, tileset3], 0, 0).setScale(2);
         console.log("Layer '3' loaded");
 
-
         player = this.physics.add.existing(new Player(this, 150, 200)).setScale(2);
         this.physics.world.enable(player);
-        this.physics.add.collider(player, layer2);
 
         this.rat = this.physics.add.sprite(720, 625, 'rat').setScale(2);
         this.rat.setDepth(1);
-
         this.physics.world.enable(this.rat);
-        this.rat._oldPosition = { x: 370, y: 325 };
+        this.rat._oldPosition = { x: 720, y: 625 };
 
+        this.anims.create({
+            key: 'rat',
+            frames: this.anims.generateFrameNumbers('rat', { start: 0, end: 1 }),
+            frameRate: 5,
+            repeat: -1,
+        });
 
+        this.rat.anims.play('rat', true);
 
-    this.anims.create({
-        key: 'rat',
-        frames: this.anims.generateFrameNumbers('rat', { start: 0, end: 1 }),
-        frameRate: 5,
-        repeat: -1,
-    });
-
-    this.rat.anims.play('rat', true);
-
-
-map2.layers.forEach(layer => {
-    for (let y = 0; y < layer.data.length; y++) {
-        for (let x = 0; x < layer.data[y].length; x++) {
-            const tile = layer.data[y][x];
-            if (tile.index !== -1 && tile.index !== 0) {
-                tile.setCollision(true);
-                tile.setCollisionCallback(() => {
-                    console.log("Kolizja z kafelkiem o indeksie:", tile.index);
-                    player.setX(player._oldPosition.x);
-                    player.setY(player._oldPosition.y);
-                });
+        map2.layers.forEach(layer => {
+            for (let y = 0; y < layer.data.length; y++) {
+                for (let x = 0; x < layer.data[y].length; x++) {
+                    const tile = layer.data[y][x];
+                    if (tile.index !== -1 && tile.index !== 0) {
+                        tile.setCollision(true);
+                        tile.setCollisionCallback(() => {
+                            console.log("Collision with tile index:", tile.index);
+                            player.setVelocity(0);
+                        });
+                    }
+                }
             }
-        }
+        });
+
+        // Dodanie kolizji z warstwą layer2
+        this.physics.add.collider(player, layer2);
+        this.physics.add.collider(player, layer3);
+        this.rat.setInteractive();
+
+        this.physics.add.collider(player, this.rat, (player, rat) => {
+            player.setVelocity(0);
+            
+            rat.setVelocity(0, 0);
+            
+            rat.setX(rat._oldPosition.x);
+            rat.setY(rat._oldPosition.y);
+            player.setX(player._oldPosition.x);
+            player.setY(player._oldPosition.y);
+        });
+
+        
+        this.input.keyboard.on('keydown-E', () => {
+  
+            if (this.ratImage) {
+             
+                this.ratImage.destroy();
+                this.ratImage = null; 
+                this.playerCanMove = true; 
+            } else {
+                const interactionDistance = 170; 
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.rat.x, this.rat.y);
+    
+                if (distance <= interactionDistance) {
+
+                    const ratImageX = this.cameras.main.centerX - this.cameras.main.width / 2;
+                    const ratImageY = this.cameras.main.height - 145;
+                    this.ratImage = this.add.sprite(ratImageX, ratImageY, 'ratImage', 0);
+                    this.ratImage.setScale(3); 
+                    this.ratImage.setDepth(3);
+                    this.playerCanMove = false; 
+                }
+            }
+        });
+
     }
-});
 
-// Dodanie kolizji z warstwą layer2
-this.physics.add.collider(player, layer2);
-
+    update() {
+        const cursors = this.input.keyboard.createCursorKeys();
+        player.update(cursors);
     }
 
-
-
-update(){
-    const cursors = this.input.keyboard.createCursorKeys(); 
-
-    player.update(cursors); 
-
-}
 }
 
 class Player extends Phaser.Physics.Arcade.Sprite {
@@ -111,11 +136,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setSize(this.width - 40, this.height - 35, true).setOffset(20, 35);
     }
 
-    
-
-
-        
-
     initAnimations() {
         this.anims.create({
             key: 'right',
@@ -123,14 +143,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'front',
             frames: this.anims.generateFrameNumbers('playerFront', { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'back',
             frames: this.anims.generateFrameNumbers('playerBack', { start: 0, end: 7 }),
@@ -183,6 +203,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.anims.stop(['back', 'front', 'right']);
         }
 
-        //player._oldPosition = { x: player.x, y: player.y };
+        player._oldPosition = { x: player.x, y: player.y };
     }
 }
