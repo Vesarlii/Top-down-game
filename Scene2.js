@@ -72,7 +72,7 @@ class Scene2 extends Phaser.Scene {
             }
         });
 
-        // Dodanie kolizji z warstwą layer2
+        
         this.physics.add.collider(player, layer2);
         this.physics.add.collider(player, layer3);
         this.rat.setInteractive();
