@@ -10,6 +10,8 @@
             this.load.image('startButton2', 'images/start/start2.png');
             this.load.image('groundStart', 'images/start/ground_start.png');
             this.load.image('gory', 'images/start/tlo.png');
+
+            this.load.spritesheet('tv', 'images/spritesheets/right.png', { frameWidth: 86, frameHeight: 62 });
     
         }
     
@@ -58,6 +60,15 @@
                     }
                 }
             });
+
+            this.tv = this.add.sprite(720, window.innerHeight - 360, 'tv').setScale(4);
+            this.anims.create({
+                key: 'tv',
+                frames: this.anims.generateFrameNumbers('tv', { start: 0, end: 5 }),
+                frameRate: 7,
+                repeat: -1,
+            });
+            this.tv.anims.play('tv', true);
     
             // Ustawienie pozycji "gory" za "groundStart"
             gory.setDepth(0);

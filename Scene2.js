@@ -55,6 +55,8 @@ class Scene2 extends Phaser.Scene {
             repeat: -1,
         });
 
+        this.playerCanMove = true;
+
         this.rat.anims.play('rat', true);
 
         map2.layers.forEach(layer => {
@@ -90,33 +92,73 @@ class Scene2 extends Phaser.Scene {
 
         
         this.input.keyboard.on('keydown-E', () => {
-  
-            if (this.ratImage) {
-             
-                this.ratImage.destroy();
-                this.ratImage = null; 
-                this.playerCanMove = true; 
+            if (this.dialogBox && !this.optionChosen) {
+                this.dialogBox.destroy();
+                this.textNPC.destroy();
+                this.option1.destroy();
+                this.option2.destroy();
+                this.playerCanMove = true;
+        
+                if (this.npcImage) {
+                    this.npcImage.destroy();
+                    this.npcImage = null;
+                }
             } else {
-                const interactionDistance = 170; 
-                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.rat.x, this.rat.y);
-    
+                const interactionDistance = 170;
+                const distance = Phaser.Math.Distance.Between(player.x, player.y, this.rat.x, this.rat.y);
+        
                 if (distance <= interactionDistance) {
-
-                    const ratImageX = this.cameras.main.centerX - this.cameras.main.width / 2;
-                    const ratImageY = this.cameras.main.height - 145;
-                    this.ratImage = this.add.sprite(ratImageX, ratImageY, 'ratImage', 0);
-                    this.ratImage.setScale(3); 
-                    this.ratImage.setDepth(3);
-                    this.playerCanMove = false; 
+                    if (!this.dialogBox || this.optionChosen) {
+                        if (!this.npcImage) {
+                            // Przesuń obrazek NPC w lewy dolny róg kamery
+                            const cameraX = this.cameras.main.worldView.x + 100;
+                            const cameraY = this.cameras.main.worldView.y + this.cameras.main.height - 100;
+                            this.npcImage = this.add.image(cameraX + 30, cameraY - 30, 'ratImage').setScale(2).setDepth(3);
+                        }
+        
+                        // Tworzenie czarnego tła półprzezroczystego
+                        this.dialogBox = this.add.rectangle(this.rat.x + 50, this.rat.y + 100, 200, 150, 0x000000, 0.7).setDepth(2);
+                        
+                        // Tekst NPC
+                        this.textNPC = this.add.text(this.rat.x + 25, this.rat.y + 70, "Cześć! Jestem królem szczórów, czego szukasz w moim królestwie?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        
+                        // Opcje dialogowe
+                        this.option1 = this.add.text(this.rat.x + 25, this.rat.y + 110, "Hałasy przeszkadzają niebieskiemu gnomowi, czy możecie zachowywać się ciszej, tu na dole?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        this.option2 = this.add.text(this.rat.x + 25, this.rat.y + 140, "Tylko tędy przechodzę", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+        
+                        // Ustawienie interaktywności dla opcji
+                        this.option1.setInteractive();
+                        this.option1.on('pointerdown', () => {
+                            this.textNPC.setText("Oczywiście! Za jedną kanapkę z serem tygodniowo, możemy organizować mniej huczne imprezy");
+                            this.optionChosen = true;
+                        });
+        
+                        this.option2.setInteractive();
+                        this.option2.on('pointerdown', () => {
+                            this.textNPC.setText("Dobrze, szerokiej drogi!");
+                            this.optionChosen = true;
+                        });
+        
+                        // Zatrzymanie gracza i ustawienie flagi ruchu
+                        player.setVelocity(0);
+                        this.playerCanMove = false;
+                    }
                 }
             }
+        
+            if (this.optionChosen) {
+                this.optionChosen = false;
+            }
         });
-
+        
+        
     }
 
     update() {
-        const cursors = this.input.keyboard.createCursorKeys();
-        player.update(cursors);
+        if (this.playerCanMove) {
+            const cursors = this.input.keyboard.createCursorKeys();
+            player.update(cursors);
+        }
     }
 
 }
