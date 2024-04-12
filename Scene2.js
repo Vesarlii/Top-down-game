@@ -117,27 +117,33 @@ class Scene2 extends Phaser.Scene {
                         }
         
                         // Tworzenie czarnego tła półprzezroczystego
-                        this.dialogBox = this.add.rectangle(this.rat.x + 50, this.rat.y + 100, 200, 150, 0x000000, 0.7).setDepth(2);
+                        this.dialogBox = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height - 120, this.cameras.main.width - 400, 150, 0x000000, 0.7).setDepth(2);
                         
                         // Tekst NPC
-                        this.textNPC = this.add.text(this.rat.x + 25, this.rat.y + 70, "Cześć! Jestem królem szczórów, czego szukasz w moim królestwie?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        this.textNPC = this.add.text(300, this.cameras.main.height - 170, "Cześć! Jestem królem szczórów, czego szukasz w moim królestwie?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
                         
                         // Opcje dialogowe
-                        this.option1 = this.add.text(this.rat.x + 25, this.rat.y + 110, "Hałasy przeszkadzają niebieskiemu gnomowi, czy możecie zachowywać się ciszej, tu na dole?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
-                        this.option2 = this.add.text(this.rat.x + 25, this.rat.y + 140, "Tylko tędy przechodzę", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        this.option1 = this.add.text(300, this.cameras.main.height - 120, "Hałasy przeszkadzają niebieskiemu gnomowi, czy możecie zachowywać się ciszej, tu na dole?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        this.option2 = this.add.text(300, this.cameras.main.height - 90, "Tylko tędy przechodzę", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
         
                         // Ustawienie interaktywności dla opcji
                         this.option1.setInteractive();
                         this.option1.on('pointerdown', () => {
                             this.textNPC.setText("Oczywiście! Za jedną kanapkę z serem tygodniowo, możemy organizować mniej huczne imprezy");
                             this.optionChosen = true;
+                            this.option1.destroy();
+                            this.option2.setText("Dzięki, przekażę dobre wieści niebieskiemu gnomowi!");
                         });
         
                         this.option2.setInteractive();
                         this.option2.on('pointerdown', () => {
                             this.textNPC.setText("Dobrze, szerokiej drogi!");
                             this.optionChosen = true;
+                            this.option1.destroy();
+                            this.option2.destroy();
+                            
                         });
+        
         
                         // Zatrzymanie gracza i ustawienie flagi ruchu
                         player.setVelocity(0);
