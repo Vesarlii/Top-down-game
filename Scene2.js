@@ -120,7 +120,7 @@ class Scene2 extends Phaser.Scene {
                         this.dialogBox = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height - 120, this.cameras.main.width - 400, 150, 0x000000, 0.7).setDepth(2);
                         
                         // Tekst NPC
-                        this.textNPC = this.add.text(300, this.cameras.main.height - 170, "Cześć! Jestem królem szczórów, czego szukasz w moim królestwie?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
+                        this.textNPC = this.add.text(300, this.cameras.main.height - 170, "Cześć! Jestem królem szczurów, czego szukasz w moim królestwie?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
                         
                         // Opcje dialogowe
                         this.option1 = this.add.text(300, this.cameras.main.height - 120, "Hałasy przeszkadzają niebieskiemu gnomowi, czy możecie zachowywać się ciszej, tu na dole?", { fontSize: '14px', fill: '#ffffff' }).setDepth(3);
